@@ -73,7 +73,7 @@ Need to find the IP address it has assigned
 ssh pi@10.10.10.119
 ```
 
-Find the default password according to this page https://tutorials-raspberrypi.com/raspberry-pi-default-login-password/
+Find the default password according to this page: https://tutorials-raspberrypi.com/raspberry-pi-default-login-password/
 
 `raspberry`
 
@@ -223,42 +223,40 @@ sudo systemctl enable environment-monitor.service
 sudo systemctl start environment-monitor.service
 ```
 
-# Try to automatically publish to google doc
+# Automatically publish to google doc
 
-https://support.google.com/googleapi/answer/6158862?hl=en
-https://console.cloud.google.com/apis/credentials?project=nimble-charmer-226722
-
-API Key= XXXXXX
-
-https://docs.brainstormforce.com/create-google-sheet-api-key/
-https://developers.google.com/sheets/api/quickstart/python
-
---------
-
-Create a project: https://developers.google.com/workspace/guides/create-project
-
-Enable Google Workspace API for Google Doc https://developers.google.com/workspace/guides/create-project#enable-api
-https://console.cloud.google.com/apis/api/docs.googleapis.com/overview?project=nimble-charmer-226722
-
-https://console.cloud.google.com/apis/credentials/oauthclient/527041641119-5akroaikm71tvpod72drk27i25040vm0.apps.googleusercontent.com?project=nimble-charmer-226722
-Client ID: XXXX-XXXX.apps.googleusercontent.com
-Secret: XXXXXXXX
+Links:
+- [Setting up API keys](https://support.google.com/googleapi/answer/6158862?hl=en)
+- [GCP API Credentials Page](https://console.cloud.google.com/apis/credentials)
+- [How to Create Google Sheet API key](https://docs.brainstormforce.com/create-google-sheet-api-key/)
+- [Google Sheets Python API](https://developers.google.com/sheets/api/quickstart/python)
+- [Create a project and enable the API](https://developers.google.com/workspace/guides/create-project)
+- [Enable Google Workspace API for Google Doc](https://developers.google.com/workspace/guides/create-project#enable-api)
+- [Google Docs API Dashboard](https://console.cloud.google.com/apis/api/docs.googleapis.com/overview)
+- [Google Sheets API Dashboard](https://console.cloud.google.com/apis/api/sheets.googleapis.com/overview)
+- [OAuth Scopes](https://developers.google.com/identity/protocols/oauth2/scopes#sheets)
+- [Sheets Append API](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append)
 
 --------
 
-https://developers.google.com/sheets/api/quickstart/python
-https://developers.google.com/workspace/guides/create-project
-https://console.cloud.google.com/apis/api/sheets.googleapis.com/overview?project=nimble-charmer-226722
+## Enable the Google Sheets API
 
-Search for 'Sheets API' in search box, select it, then enable it.
+Search for 'Google Sheets API' in search box, select it, then enable it.
 
 Credential should be associated there.
 
+## Create API Credentials
+
+From the GCP API Credentials page above, you'll need to create an *OAuth 2.0
+Client ID*; Use the Client ID and Secret from the OAuth Secret for the API
+client. Keep these values PRIVATE!!! Use the "Reset Secret" link to rotate the
+secret
 
 ## Notes on trying to get google API working
 
-Download the credentials JSON from https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials?project=nimble-charmer-226722
-and move to `credentials.json`
+Download the credentials JSON from the [Google Sheets API
+Dashboard](https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials)
+and save as `credentials.json`
 
 ```bash
 # On Mac
@@ -268,74 +266,12 @@ python3 google-sheets-api-test.py
 # Above will do a browser redirect
 ```
 
-NOTE That the browser redirect will login via ssosik@work.com
+*Pay Attention* to the email address used for login via the browser redirect
 
 I needed to go to the OAuth Consent Screen and Publish the App
 
-# Readonly is working, try append
+## Publish data
 
-Scopes: https://developers.google.com/identity/protocols/oauth2/scopes#sheets
-Append API https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
-
-
-Working:
-```
-# From https://developers.google.com/sheets/api/quickstart/python
-
-from __future__ import print_function
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = 'XXXXX'
-SAMPLE_RANGE_NAME = 'Sheet4!A2'
-
-def main():
-    """Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    service = build('sheets', 'v4', credentials=creds)
-    values = [
-        [ "10/10/2021 11:04:17PM",	"60.7",	"89.4",	"996.4" ],
-        # Additional rows ...
-    ]
-    body = {
-        'values': values
-    }
-    result = service.spreadsheets().values().append(
-            spreadsheetId=SPREADSHEET_ID, range="Sheet4!A1:D",
-        valueInputOption="RAW", body=body).execute()
-    print('{0} cells updated.'.format(result['updates']['updatedRows']))
-
-if __name__ == '__main__':
-    main()
-```
-
-Actually publishing new data
 ```python
 # sudo pip3 install --upgrade pytz RPi.bme280 google-api-python-client google-auth-httplib2 google-auth-oauthlib
 #
@@ -438,7 +374,8 @@ except Exception as e:
         writer.writerow(row)
 ```
 
-Script to reupload rows that failed to publish
+## Reupload rows that failed to publish
+
 ```python
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials

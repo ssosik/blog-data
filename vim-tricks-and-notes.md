@@ -263,5 +263,5 @@ z=			For the word under/after the cursor suggest correctly
 # Build and deploy from within vim
 
 ```sh
-let logjob = job_start("cd $HOME/workspace/vault/vault && $HOME/workspace/ab-app-dev/easy-deploy-app.py <hostname> --cluster abattery --name vkms0-ssosik --build alsi8-lite --arch 64bit", {'out_io': 'buffer', 'out_name': 'dummy2'})
+let logjob = job_start("cd <path> && <command>", {'out_io': 'buffer', 'out_name': 'dummy2'})
 ```
