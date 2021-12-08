@@ -1,5 +1,5 @@
 ---
-title: WIP Dev notes on hugo blog
+title: Dev notes on hugo blog
 description: ""
 lead: ""
 date: "2021-12-06T14:23:23-0500"
