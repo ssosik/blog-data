@@ -36,6 +36,11 @@ From: <https://vim.fandom.com/wiki/Editing_remote_files_via_scp_in_vim>
 
 `:e scp://remoteuser@server.tld//absolute/path/to/document`
 
+```bash
+scp://<username>@<host>/<relative path> or scp://<username>@<host>//<absolute path>
+scp://ssosik@72.246.96.12/kmi-760-script-dev.py
+```
+
 ## macvim open tmp file in already open window
 
 To p4 print a file locally and open it in mvim set FILE to the filepath
