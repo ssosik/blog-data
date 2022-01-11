@@ -130,3 +130,56 @@ cp client.key.pem .task/keys/private.key
 .task/keys/ca.cert is the root CA, copy it out of the last cert output from
 gnutls-cli above
 ```
+
+# Handle a rotation
+```bash
+# Replace the expired Let's Encrypt server cert
+sudo cp /var/lib/acme/mail.little-fluffy.cloud/cert.pem /var/lib/taskserver/keys/server.cert
+sudo cp /var/lib/acme/mail.little-fluffy.cloud/key.pem /var/lib/taskserver/keys/server.key
+
+cd /home/steve
+mkdir -p taskserver-lets-encrypt-dev
+cd taskserver-lets-encrypt-dev
+
+TIMESTAMP=$(date --iso-8601)
+STOREPATH=$(nix-store -q $(nix-instantiate '<nixpkgs>' -A taskserver))
+
+# Create the TaskD PKI CA
+cp $STOREPATH/share/taskd/pki/vars .
+$STOREPATH/bin/taskd-pki-generate.ca
+
+sudo cp ca.cert.pem /var/lib/taskserver/keys/ca.cert.pem.$TIMESTAMP
+sudo cp ca.key.pem /var/lib/taskserver/keys/ca.key.pem.$TIMESTAMP
+sudo unlink /var/lib/taskserver/keys/ca.cert.pem
+sudo unlink /var/lib/taskserver/keys/ca.key.pem
+sudo ln -s /var/lib/taskserver/keys/ca.cert.pem.$TIMESTAMP /var/lib/taskserver/keys/ca.cert.pem
+sudo ln -s /var/lib/taskserver/keys/ca.key.pem.$TIMESTAMP /var/lib/taskserver/keys/ca.key.pem
+sudo chown taskd:taskd /var/lib/taskserver/keys/ca.cert.pem.$TIMESTAMP
+sudo chown taskd:taskd /var/lib/taskserver/keys/ca.key.pem.$TIMESTAMP
+sudo chown -h taskd:taskd /var/lib/taskserver/keys/ca.cert.pem
+sudo chown -h taskd:taskd /var/lib/taskserver/keys/ca.key.pem
+
+sudo ls -latr /var/lib/taskserver/keys
+
+sudo systemctl restart taskserver
+sudo journalctl -fn200 -u taskserver
+
+# Ensure the cert is no longer expired
+nix-shell -p gnutls --command 'gnutls-cli --print-cert -p 53589 mail.little-fluffy.cloud'
+
+# Generate client certs
+$STOREPATH/bin/taskd-pki-generate.client
+
+cp client.cert.pem $HOME/.task/keys/public.cert
+cp client.key.pem $HOME/.task/keys/private.key
+```
+
+# Then, on my Mac, copy the rotated client secrets into place
+```bash
+scp mail.little-fluffy.cloud:.task/keys/public.cert .task/keys/.
+scp mail.little-fluffy.cloud:.task/keys/private.key .task/keys/.
+```
+
+# Need to do the same on my phone in Foreground App
+
+
