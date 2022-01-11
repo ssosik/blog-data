@@ -174,12 +174,13 @@ cp client.cert.pem $HOME/.task/keys/public.cert
 cp client.key.pem $HOME/.task/keys/private.key
 ```
 
-# Then, on my Mac, copy the rotated client secrets into place
+## Rotate client secrets
+
 ```bash
 scp mail.little-fluffy.cloud:.task/keys/public.cert .task/keys/.
 scp mail.little-fluffy.cloud:.task/keys/private.key .task/keys/.
 ```
 
-# Need to do the same on my phone in Foreground App
+Need to do the same on my phone in Foreground App
 
 
