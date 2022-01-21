@@ -103,49 +103,49 @@ sign or issue certs on `platform-ca`:
 ```bash
 # WIP: -c does not pretty print
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -c 'select( .type | contains("request"))' | less
+  jq -c 'select( .type | contains("request"))' | less
 # WIP: same as above, -r does pretty print
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -r 'select( .type | contains("request"))' | less
+  jq -r 'select( .type | contains("request"))' | less
 
 # Filter by type and request.path
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca"))' | less
+  jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca"))' | less
 
 # Exclude entries that had an error:
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not)' | less
+  jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not)' | less
 
 # Filter down to just the interesting data
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | .time, .auth.metadata.role, .auth.display_name, .auth.token_type, .request.path' | less
+  jq -r 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | .time, .auth.metadata.role, .auth.display_name, .auth.token_type, .request.path' | less
 
 # Instead of filter, return a new map
 zcat audit.log.235p5-ml60b-2uwd4-h22rh-j0226.2884.1590676320.1590676462.gz | cut -f2- -d\  | \
-  /a/bin/jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' | less
+  jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' | less
 
 # Iterate over all gzip files:
 for F in logs/audit.log.old/*.gz
-do zcat $F | cut -f2- -d\  | /a/bin/jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' >> /tmp/platform-ca-requests.json
+do zcat $F | cut -f2- -d\  | jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error") | not) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' >> /tmp/platform-ca-requests.json
 done
 
 # Similar to previous, but get all errored requests:
 for F in *.gz
-do zcat $F | cut -f2- -d\  | /a/bin/jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error")) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' >> /tmp/platform-ca-error-requests.json
+do zcat $F | cut -f2- -d\  | jq -c 'select( .type | contains("request")) | select( .request.path | contains("platform-ca")) | select( has("error")) | {time: .time, role: .auth.metadata.role, name: .auth.display_name, token_type: .auth.token_type, path: .request.path}' >> /tmp/platform-ca-error-requests.json
 done
 
 # Look for requests on platform-ca that were NOT issue or signs
 grep -v 'sign\|issue' /tmp/platform-ca-requests.json
 
 # Get all paths and count their calls
-/a/bin/jq -r .path /tmp/platform-ca-requests.json | sort | uniq -c
+jq -r .path /tmp/platform-ca-requests.json | sort | uniq -c
 
 # Get all entries on a specific path
-/a/bin/jq -r 'select( .path == "platform-ca/issue/kaas" )' /tmp/platform-ca-requests.json | less
+jq -r 'select( .path == "platform-ca/issue/kaas" )' /tmp/platform-ca-requests.json | less
 
 # Get all entries NOT using batch tokens
-/a/bin/jq -r 'select( .token_type == "batch" | not)' /tmp/platform-ca-requests.json | less
-/a/bin/jq -c 'select( .token_type == "batch" | not)' /tmp/platform-ca-requests.json
+jq -r 'select( .token_type == "batch" | not)' /tmp/platform-ca-requests.json | less
+jq -c 'select( .token_type == "batch" | not)' /tmp/platform-ca-requests.json
 ```
 
 # Ignore non-JSON lines
