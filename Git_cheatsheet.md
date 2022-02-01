@@ -1,11 +1,13 @@
 ---
-title: Git cheatsheet
+title: Git Tricks and Cheatsheet
 description: ""
 lead: ""
 date: "2021-09-01T19:31:58-04:00"
-lastmod: "2021-09-01T19:31:58-04:00"
 tags:
   - git
+  - cli
+  - cheatsheet
+  - tricks
 draft: false
 weight: 50
 images: []
@@ -13,7 +15,7 @@ contributors:
   - Steve Sosik
 ---
 
-### Tag delete
+# Tag delete
 
 How to delete a tag locally and on a remote
 https://www.manikrathee.com/how-to-delete-a-tag-in-git.html
@@ -24,7 +26,7 @@ Delete the tag locally
 Delete it from the remote, in this case the tag was confusingly named `refs/heads/main`
     git push origin :refs/tags/refs/heads/main
 
-### Submodule sync and changes through .gitmodules
+# Submodule sync and changes through .gitmodules
 
 I had a problem while I was attempting to push to remote in a submodule, git
 was attempting to push using the wrong username.
@@ -43,3 +45,13 @@ cat .gitmodules
 ```
 
 Then `git submodule sync`. Git pushes should then use the correct user.
+
+# Git log/diff excluding subdirectories
+
+Golang is messy, especially when trying to view git diffs when dependencies have
+changed. Exclude vendored dependencies when view commits/diffs
+
+```bash
+# Exclude 'vendor' subdirectory
+git diff add-akamake feature/KMI-913-development  ':!vendor'
+```
