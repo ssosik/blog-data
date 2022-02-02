@@ -55,3 +55,15 @@ changed. Exclude vendored dependencies when view commits/diffs
 # Exclude 'vendor' subdirectory
 git diff add-akamake feature/KMI-913-development  ':!vendor'
 ```
+
+# Show contents of file from another branch
+
+```bash
+git show origin/dev-branch:Dockerfile
+```
+
+# Get current branch name
+
+```bash
+git rev-parse --abbrev-ref HEAD
+```
