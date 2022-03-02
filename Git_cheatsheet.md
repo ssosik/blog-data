@@ -141,6 +141,16 @@ git commit ...
 git rebase --continue
 ```
 
+## Interactively unstage a change
+
+If you've accidentally git-added too many changes, you can interactively evict
+staged changes from the index, just be sure to notice the "negated" action here,
+and be sure to run the restore to completion.
+
+```bash
+git restore --staged -p
+```
+
 # Show contents of file from another branch
 
 ```bash
