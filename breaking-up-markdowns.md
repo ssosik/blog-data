@@ -9,4 +9,4 @@ weight: 50
 images: []
 ---
 
-{{< include title="breaking-up-markdowns.sh" file="breaking-up-markdowns.sh" lang="bash" highlight={linenos=table} >}}
+{{< include title="breaking-up-markdowns.sh" file="breaking-up-markdowns.sh" lang="bash" open=true highlight={linenos=table} >}}

@@ -1,8 +1,10 @@
 
-git switch main
-git checkout gitsource_main $ITEM
-git add $ITEM
-git commit -m'move to public'
-git switch gitsource_main
-git rm -r $ITEM
-git commit -m'moved to public'
+function moveit {
+    git switch main
+    git checkout gitsource_main $1
+    git add $1
+    git commit -m'move to public'
+    git switch gitsource_main
+    git rm -r $1
+    git commit -m'moved to public'
+}
