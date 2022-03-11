@@ -5,7 +5,6 @@ lead: ""
 date: "2019-06-19T15:07:08-04:00"
 lastmod: "2019-06-19T15:07:08-04:00"
 tags:
-  - work
   - python
 draft: true
 weight: 50
