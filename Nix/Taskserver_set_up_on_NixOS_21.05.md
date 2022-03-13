@@ -132,6 +132,34 @@ gnutls-cli above
 ```
 
 # Handle a rotation
+The server cert provided via LetsEncrypt will expire periodically. Clients will
+see errors like:
+
+## Task CLI error with expired server cert
+```bash
+╰─ task sy
+Syncing with mail.little-fluffy.cloud:53589
+
+Handshake failed. The certificate is NOT trusted. The certificate chain uses expired certificate.
+Sync failed.  Could not connect to the Taskserver.
+```
+## Foreground Android App error with expired server cert
+```bash
+Sync Failed
+javax.net ssl.SSLHandshakeException:
+java.security.cert.CertPathValidatorException: Trust anchor for certification
+path not found.
+```
+## Use openssl to inspect the expiry on the server cert
+```bash
+nix-shell -p gnutls --command 'gnutls-cli --print-cert -p 53589 mail.little-fluffy.cloud'
+...
+- Certificate[0] info:
+ - subject `CN=mail.little-fluffy.cloud', issuer `CN=R3,O=Let's Encrypt,C=US', serial 0x040f1d6b69104a448eecccf6123e4d6efacb, EC/ECDSA key 256 bits, signed using RSA-SHA256, activated `2021-12-12 06:12:58 UTC', expires `2022-03-12 06:12:57 UTC', pin-sha256="fDOvEHS6p64t92NIh6xCaMY4iUfq6RxBtkXAbkbmVMA="
+...
+```
+
+## Rotate the server cert on the taskwarrior server
 ```bash
 # Replace the expired Let's Encrypt server cert
 sudo cp /var/lib/acme/mail.little-fluffy.cloud/cert.pem /var/lib/taskserver/keys/server.cert
@@ -163,24 +191,44 @@ sudo ls -latr /var/lib/taskserver/keys
 
 sudo systemctl restart taskserver
 sudo journalctl -fn200 -u taskserver
+```
 
+## At this point, the taskserver should be using the new cert, double check
+```bash
 # Ensure the cert is no longer expired
 nix-shell -p gnutls --command 'gnutls-cli --print-cert -p 53589 mail.little-fluffy.cloud'
+```
 
-# Generate client certs
+## Generate client certs
+Now, we need to regenerate the client certs since these are issued from the
+server cert.
+```bash
 $STOREPATH/bin/taskd-pki-generate.client
 
+# On the taskserver itself, copy over the new client certs and verify they work
 cp client.cert.pem $HOME/.task/keys/public.cert
 cp client.key.pem $HOME/.task/keys/private.key
+
+cd
+# This is currently not working because the taskwarrior client on the
+# taskserver isn't on the right version:
+task sync
 ```
 
 ## Rotate client secrets
 
+### On my mac, fetch the new taskserver client cert
+
 ```bash
 scp mail.little-fluffy.cloud:.task/keys/public.cert .task/keys/.
 scp mail.little-fluffy.cloud:.task/keys/private.key .task/keys/.
+
+task sync
+# Sync successful.  4 changes downloaded.
 ```
+### On my Android phone, For Foreground app
 
-Need to do the same on my phone in Foreground App
-
-
+Need to do the same on my phone in Foreground App. Connect using Android File
+Transfer. Copy `ca.cert`, `public.cert`, and `private.key` to Documents folder
+on the phone. Then open the Foreground App and re-select the CA, Public, and
+Private certs used under Settings. Might need to disable and reenable sync.
