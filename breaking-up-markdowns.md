@@ -16,7 +16,7 @@ item from the former repo.
 # Set up
 ```bash
 git remote add origin https://github.com/ssosik/work-notes-public.git
-git remote add gitsource ssh://git@git.source.akamai.com:7999/~ssosik/notes.git
+git remote add gitsource ssh://git@git.source:7999/~ssosik/notes.git
 
 git checkout -b new origin/main
 git checkout -b old gitsource/main

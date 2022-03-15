@@ -195,7 +195,7 @@ From <https://pascalprecht.github.io/posts/pretty-print-json-in-vim>
 # Mail a buffer from vim command prompt
 
 ```
-:!mail --to ssosik@akamai.com --subject test123 <%
+:!mail --to me@little-fluffy.cloud --subject test123 <%
 ```
 
 # Open previously opened files in vim

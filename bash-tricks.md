@@ -295,7 +295,7 @@ Content-Type: application/json
 EOF
 
 # This does not work, the newlines are probably not correct
-cat <<EOF | openssl s_client -CAfile ~/.certs/nss1-canonical_ca_roots.pem -cert ~/.certs/ssosik-testnet.crt -key ~/.certs/ssosik-testnet.key vkms0-ssosik.default.abattery.appbattery.nss1.tn.akamai.com:443
+cat <<EOF | openssl s_client -CAfile ~/.certs/nss1-canonical_ca_roots.pem -cert ~/.certs/ssosik-testnet.crt -key ~/.certs/ssosik-testnet.key $HOST:443
 POST /v1/auth/vkms_proxy_auth/login HTTP/1.1
 User-Agent: curl/7.35.0
 Host: localhost
@@ -309,7 +309,7 @@ Content-Type: application/json
 EOF
 
 # This works - Using openssl s_client to make an HTTP POST request
-echo -e 'POST /v1/auth/vkms_proxy_auth/login HTTP/1.1\r\nHost: vkms0-ssosik.default.abattery.appbattery.nss1.tn.akamai.com\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\nContent-Length: 41\r\nContent-Type: application/json\r\n\r\n{"method": "cert", "name": "mpulse-user"}\r\n\r\n' | openssl s_client -quiet -CAfile ~/.certs/nss1-canonical_ca_roots.pem -cert ~/.certs/ssosik-testnet.crt -key ~/.certs/ssosik-testnet.key -connect vkms0-ssosik.default.abattery.appbattery.nss1.tn.akamai.com:443
+echo -e 'POST /v1/auth/vkms_proxy_auth/login HTTP/1.1\r\nHost: $HOST\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\nContent-Length: 41\r\nContent-Type: application/json\r\n\r\n{"method": "cert", "name": "mpulse-user"}\r\n\r\n' | openssl s_client -quiet -CAfile ~/.certs/nss1-canonical_ca_roots.pem -cert ~/.certs/ssosik-testnet.crt -key ~/.certs/ssosik-testnet.key -connect $HOST:443
 ```
 
 # How to assign a heredoc to a variable

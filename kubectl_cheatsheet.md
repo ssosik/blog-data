@@ -21,7 +21,7 @@ contributors:
 
 # ${HOME}/.kube/config
 
-From https://rancher.tn.akamai.com/g/clusters, select the cluster, then ->
+From the Rancher UI select the cluster, then ->
 Cluster then hit the Kubeconfig File link. Save that to ~/.kube/config.
 Remove the `certificate-authority-data` and add `insecure-skip-tls-verify: true`
 to disable verifying the servers cert.
