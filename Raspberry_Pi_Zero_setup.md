@@ -163,7 +163,7 @@ Links:
 
 ## Enable the Google Sheets API
 
-Search for 'Google Sheets API' in search box, select it, then enable it.
+Starting from the [Google API Credentials page](https://console.cloud.google.com/apis/credentials) Search for 'Google Sheets API' in search box, select it, then enable it.
 
 Credential should be associated there.
 
@@ -173,6 +173,9 @@ From the GCP API Credentials page above, you'll need to create an *OAuth 2.0
 Client ID*; Use the Client ID and Secret from the OAuth Secret for the API
 client. Keep these values PRIVATE!!! Use the "Reset Secret" link to rotate the
 secret
+
+Application Type: Web Application
+Name: Weather Station
 
 ## Notes on trying to get google API working
 
@@ -184,13 +187,38 @@ and save as `credentials.json`
 # On Mac
 pip3 install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
-python3 google-sheets-api-test.py
-# Above will do a browser redirect
+# This will do a browser redirect
+python3 workspace/notes/personal-notes-public/google-sheets-api-test.py
+
+Please visit this URL to authorize this application: https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=527041641119-i8uikns8tfg7sqq1b8qfg7j6u0b054a8.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A63031%2F&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fspreadsheets&state=3o4H6Q9JdjIdOSFEtlcwa4opjTJA9r&access_type=offline
 ```
+
+### Getting token.json
+
+- Make sure you don't have an old copy of token.json laying around
+- Follow the link to authorize the application
+
+#### Allow the redirect_uri!
+
+When following the Auth link, you may get a `Error 400: redirect_uri_mismatch`
+error in your browser. Expand the request details to see the exact redirect_uri
+being used. Go back to the OAuth 2.0 Client page and paste in the specific
+localhost:port for the redirect to allow the localhost redirect. Hit **Save**.
+Wait second, then follow the Auth link again. This time, it should show you a
+dialog to select the account to use. Choose the account. There might be a
+browser warning, but keep trying to click through.
+
+`The authentication flow has completed. You may close this window.`
+
+Once this completes, you should have a brand new `token.json` file.
+
+{{< include title="google-sheets-api-test.py" file="google-sheets-api-test.py" lang="python" highlight={linenos=table} >}}
 
 *Pay Attention* to the email address used for login via the browser redirect
 
 I needed to go to the OAuth Consent Screen and Publish the App
+
+Copy the token.json to the host running the client code.
 
 ## Publish data
 
