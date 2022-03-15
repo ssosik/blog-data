@@ -1,7 +1,6 @@
 ---
-title: Raspberry Pi Zero setup
-description: ""
-lead: ""
+title: Raspberry Pi Zero Weather station setup
+description: "Use a Raspberry Pi Zero with a BME280 sensor to track temperature, humidity, and air pressure"
 date: "2021-10-10T09:06:29-04:00"
 lastmod: "2021-10-10T09:06:29-04:00"
 categories:
@@ -97,13 +96,13 @@ sudo mv sshd_config /etc/ssh/sshd_config
 
 mkdir $HOME/.ssh
 cat <<EOF > $HOME/.ssh/authorized_keys
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcnA6LSZbTmBDKWBkoaZ2WKYhAuHqdtPTsjbAKrrpFxeATqqolrpCs4pxLqr2hd/CGvD1ax1HC7x5bIkhpfTu0ysZoSx03A/yLNi0quTcGikD3PCFXDY2Afmdud5DEugrOsxfgwLWSz0xqzXfkVqB42EUOLa71cDQfPt/J/fIhu6ymUttMN9t7lDIhRq9vs5DcOOEsV/FtFYOfUfrUEaOx1qtUNBKGSxKeLZKXcyfI03AK0oaI6HTV37tDAdSHdWX7uqyWCNpzk5KDeJ9m2MAf5A5UcQ4PbtJxzlzR0IG6bzUCC3RsnO4qO2aoDMcPUeb1tq07lYajDHjGLSZCBk0B .ssh/id_rsa.pizero
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcnA6LSZbTmBDKWBkoaZ2WKYhAuHqdtPTsjbAKrrpFxeATqqolrpCs4pxLqr2hd/CGvD1ax1HC7x5bIkhpfTu0ysZoSx03A/yLNi0quTcGikD3PCFXDY2Afmdud5DEugrOsxfgwLWSz0xqzXfkVqB42EUOLa71cDQfPt/J/fIhu6ymUttMN9t7lDIhRq9vs5DcOOEsV/FtFYOfUfrUEaOx1qtUNBKGSxKeLZKXcyfI03AK0oaI6HTV37tDAdSHdWX7uqyWCNpzk5KDeJ9m2MAf5A5UcQ4PbtJxzlzR0IG6bzUCC3RsnO4qO2aoDMcPUeb1tq07lYajDHjGLSZCBk0B
 EOF
 
 sudo service sshd restart
 ```
 
-## Configure for BME280 temperature and humidity sensor
+## Configure BME280 temperature/humidity sensor and dependencies
 
 ```bash
 # Enable I2C in the Interfacing options
@@ -122,97 +121,20 @@ sudo i2cdetect -y 1
 sudo apt install python3-pip
 
 sudo pip3 install --upgrade RPi.bme280 google-api-python-client google-auth-httplib2 google-auth-oauthlib pytz
-
-cat <<EOF > temp_test.py
-cat temp_test.py
-import time
-import smbus2
-import bme280
-
-# BME280 settings
-port = 1
-address = 0x77
-bus = smbus2.SMBus(port)
-calibration_params = bme280.load_calibration_params(bus, address)
-
-while True:
-
-        #Get Data from Sensor
-        bme280data = bme280.sample(bus, address, calibration_params)
-        humidity = format(bme280data.humidity, ".1f")
-        temp_f = (bme280data.temperature * 9/5) + 32
-
-        #Send Temp and Humidity to Web Dashboard (Initial State)
-        print("Temperature(F)", temp_f)
-        print("Humidity(%)", humidity)
-
-        #For Testing uncomment the 5-second sleep and console prints.
-        time.sleep(5)
-        print(temp_f,humidity)
-
-        #For Final Product uncomment use longer sleep and remove prints.
-        #time.sleep(60*MINUTES_BETWEEN_READS)
-EOF
-
-python3 temp_test.py
 ```
+
+Test scripts:
+{{< include title="temp-test.py" file="temp-test.py" lang="python" highlight={linenos=table} >}}
+{{< include title="environment-sensor-basic.py" file="environment-sensor-basic.py" lang="python" highlight={linenos=table} >}}
 
 # Set up systemd to automatically run
 
 https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/
 
-```
-# Write the python script
-cat <<EOF > environment-sensor.py
-# bme280 docs https://pypi.org/project/RPi.bme280/
-import bme280
-import csv
-import smbus2
-import time
+{{< include title="environment-monitor.service" file="environment-monitor.service" lang="toml" open=true highlight={linenos=table} >}}
 
-MINUTES_BETWEEN_WRITES = 10
-
-# BME280 settings
-port = 1
-address = 0x77
-bus = smbus2.SMBus(port)
-calibration_params = bme280.load_calibration_params(bus, address)
-
-start = format(time.time(), ".0f")
-
-with open(f"/home/pi/data-{start}.csv", 'a', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(("Timestamp", "Temperature (F)", "Humidity %", "Pressure (hPa)"))
-
-    while True:
-
-            # Get Data from Sensor
-            bme280data = bme280.sample(bus, address, calibration_params)
-            humidity = format(bme280data.humidity, ".1f")
-            temp_f = format((bme280data.temperature * 9/5) + 32, ".1f")
-            pressure = format(bme280data.pressure, ".1f")
-
-            # Emit row to CSV
-            writer.writerow((bme280data.timestamp, temp_f, humidity, pressure))
-            csvfile.flush()
-
-            time.sleep(60*MINUTES_BETWEEN_WRITES)
-EOF
-
+```bash
 # Write the systemd service
-cat <<EOF > environment-monitor.service
-[Unit]
-Description=Capture Temperature, Humidity, and Pressure every 10 minutes
-After=multi-user.target
-
-[Service]
-Type=idle
-WorkingDirectory=/home/pi
-ExecStart=/usr/bin/python3 ./environment-sensor.py
-
-[Install]
-WantedBy=multi-user.target
-EOF
 
 sudo mv environment-monitor.service /lib/systemd/system/environment-monitor.service
 sudo chmod 644 /lib/systemd/system/environment-monitor.service
@@ -272,188 +194,13 @@ I needed to go to the OAuth Consent Screen and Publish the App
 
 ## Publish data
 
-```python
-# sudo pip3 install --upgrade pytz RPi.bme280 google-api-python-client google-auth-httplib2 google-auth-oauthlib
-#
-
-from __future__ import print_function
-import bme280
-import csv
-import smbus2
-import time
-import os.path
-from pytz import timezone
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = 'XXXXXX'
-SHEET_RANGE = 'Environment Readings Upload!A1'
-
-# BME280 settings
-port = 1
-address = 0x77
-bus = smbus2.SMBus(port)
-calibration_params = bme280.load_calibration_params(bus, address)
-
-csv_outfile = f"/home/pi/data.csv"
-tz = timezone('US/Eastern')
-
-creds = None
-
-try:
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    service = build('sheets', 'v4', credentials=creds)
-
-except Exception as e:
-    print(f"Login error {e}")
-    sys.stdout.flush()
-    service = None
-
-
-print("Reading values from environment sensor")
-sys.stdout.flush()
-
-# Get Data from Sensor
-bme280data = bme280.sample(bus, address, calibration_params)
-humidity = format(bme280data.humidity, ".1f")
-temp_f = format((bme280data.temperature * 9/5) + 32, ".1f")
-pressure = format(bme280data.pressure, ".1f")
-now = bme280data.timestamp
-local_time = tz.localize(now)
-
-row = (local_time.strftime('%m/%d/%Y %I:%M:%S%p'), temp_f, humidity, pressure)
-body = { 'values': [row] }
-
-try:
-    result = service.spreadsheets().values().append(
-        spreadsheetId=SPREADSHEET_ID,
-        range=SHEET_RANGE,
-        valueInputOption="USER_ENTERED",
-        body=body,
-    ).execute()
-
-    updates = result.get('updates')
-    if updates is not None and updates.get('updatedRows') == 1:
-        # The good case, we updated a row, continue
-        print("updated 1 Row")
-        sys.stdout.flush()
-
-    else:
-        raise Exception(f"update not expected {result}")
-
-except Exception as e:
-    # If we fall through here, the google update didn't succeed so write the CSV
-    # Emit row to CSV
-    print(f"Publish error {e}, defaulting to writing CSV to disk")
-    sys.stdout.flush()
-
-    with open(csv_outfile, 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(row)
-```
+Full script with publishing:
+{{< include title="environment-sensor.py" file="environment-sensor.py" lang="python" open=true highlight={linenos=table} >}}
 
 ## Reupload rows that failed to publish
 
-```python
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-import argparse
-import csv
-import os
-import pdb
-import sys
+Occasionally as the script runs, it will fail to upload data to the Google
+sheet. The script will keep a backup of data in a CSV file for upload later on.
+Here is the script I use for that.
 
-parser = argparse.ArgumentParser(description="Retry uploading failed CSV entries")
-parser.add_argument("--file", "-f", help="Specify the file to source CSV rows from", required=True)
-args = parser.parse_args()
-
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = 'XXXXXX'
-SHEET_RANGE = 'Environment Readings Upload!A1'
-
-creds = None
-
-# The file token.json stores the user's access and refresh tokens, and is
-# created automatically when the authorization flow completes for the first
-# time.
-if os.path.exists('token.json'):
-    creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-# If there are no (valid) credentials available, let the user log in.
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
-    # Save the credentials for the next run
-    with open('token.json', 'w') as token:
-        token.write(creds.to_json())
-
-service = build('sheets', 'v4', credentials=creds)
-
-with open(args.file, "r") as f:
-    lines = f.readlines()
-
-with open(args.file, "w") as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-
-    for line in lines:
-        row = line.strip().split(',')
-
-        print(f"Publish row {row}")
-        sys.stdout.flush()
-
-        body = { 'values': [row] }
-
-        try:
-            result = service.spreadsheets().values().append(
-                spreadsheetId=SPREADSHEET_ID,
-                range=SHEET_RANGE,
-                valueInputOption="USER_ENTERED",
-                body=body,
-            ).execute()
-
-            updates = result.get('updates')
-            if updates is not None and updates.get('updatedRows') == 1:
-                # The good case, we updated a row, continue
-                print("updated 1 Row")
-                sys.stdout.flush()
-
-            else:
-                raise Exception(f"update not expected {result}")
-
-        except Exception as e:
-            # If we fall through here, the google update didn't succeed so write the CSV
-            # Emit row to CSV
-            print(f"Publish error {e}, keeping row on disk")
-            sys.stdout.flush()
-            writer.writerow(row)
-```
+{{< include title="csv-reupload.py" file="csv-reupload.py" lang="python" open=true highlight={linenos=table} >}}

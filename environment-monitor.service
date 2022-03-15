@@ -1,0 +1,12 @@
+[Unit]
+Description=Capture Temperature, Humidity, and Pressure every 10 minutes
+After=multi-user.target
+
+[Service]
+Type=idle
+WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python3 ./environment-sensor.py
+
+[Install]
+WantedBy=multi-user.target
+
