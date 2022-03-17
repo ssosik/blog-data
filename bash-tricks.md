@@ -76,6 +76,21 @@ vault read platform-ca/cert/ca_chain -format=json | jq -r '.data.certificate' | 
 for PART in $(ls crtpart*) ; do openssl x509 -noout -text -in $PART ; rm $PART ; done
 ```
 
+# flock to serialize bash scripts
+
+> man flock
+
+```bash
+       (
+         flock -n 9 || exit 1
+         # ... commands executed under lock ...
+       ) 9>/var/lock/mylockfile
+```
+The form is convenient inside shell scripts.  The mode used to open the file
+doesn't matter to flock; using > or >> allows the lockfile to be  created  if
+it  does  not already exist, however, write permission is required.  Using <
+requires that the file already exists but only read permission is required. 
+
 # find files written in the past 24 hours
 
 ```bash
