@@ -37,10 +37,8 @@ cargo bundle --release
 cp -r /Users/ssosik/workspace/neovide/target/release/bundle/osx/Neovide.app ~/Applications
 open ~/Applications/Neovide.app
 open ~/Applications/Neovide.app -- --args --frame ButtonLess
-open ~/Applications/Neovide.app -- --args --frame ButtonLess --remote-tcp=localhost:6666
+open ~/Applications/Neovide.app -n -- --args --frame ButtonLess --remote-tcp=localhost:6666
 ```
-
-
 
 ## Remote Nvim session
 
