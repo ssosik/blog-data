@@ -36,14 +36,18 @@ git tag --list
 How to delete a tag locally and on a remote
 https://www.manikrathee.com/how-to-delete-a-tag-in-git.html
 
-Delete the tag locally, in this case the tag was confusingly named `refs/heads/main`
+Delete the tag 'v0.3.0' locally
 ```bash
-git tag -d refs/heads/main
+git tag -d v0.3.0
+# Deleted tag 'v0.3.0' (was 9c881d6)
 ```
 
-Delete it from the remote, in this case the tag was confusingly named `refs/heads/main`
+Propagate the deletion to the remote
 ```bash
-git push origin :refs/tags/refs/heads/main
+git push origin :refs/tags/v0.3.0
+# To https://github.com/ssosik/markdown_query.git
+#  - [deleted]         v0.3.0
+git fetch --all --prune --tags
 ```
 
 # Submodules
