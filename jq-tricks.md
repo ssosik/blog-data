@@ -219,3 +219,58 @@ jq -r '.["sys/"]'
 ```
 
 Should be similar for other keys containing special characters.
+
+# Build a new structure from an existing one
+
+```bash
+# Original
+╰─ promql secret_mount_successes \
+      --host http://localhost:9090 \
+      --output json | jq .
+[
+  {
+    "metric": {
+      "__name__": "secret_mount_successes",
+      "container": "provider-installer",
+      "endpoint": "metrics",
+      "exported_namespace": "csi-provider",
+      "instance": "198.18.230.133:2112",
+      "job": "csi-provider/secrets-store-csi-driver-provider",
+      "namespace": "csi-provider",
+      "pod": "secrets-store-csi-driver-provider-cg5km"
+    },
+    "value": [
+      1648495385.628,
+      "11"
+    ]
+  }
+]
+
+# Filtered with attributes renamed
+promql secret_mount_successes \
+      --host http://localhost:9090 \
+      --output json |       jq '[ .[] | {metric: .metric| {namespace: .exported_namespace, reason: .reason},count: .value[1]}]'
+[
+  {
+    "metric": {
+      "namespace": "csi-provider",
+      "reason": null
+    },
+    "count": "12"
+  },
+  {
+    "metric": {
+      "namespace": "default",
+      "reason": null
+    },
+    "count": "12"
+  },
+  {
+    "metric": {
+      "namespace": "test123",
+      "reason": null
+    },
+    "count": "12"
+  }
+]
+```

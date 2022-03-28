@@ -40,22 +40,40 @@ Get all pods
     kubectl get po
     kubectl get po -A
 
-Create a deployment
+## Create a deployment
 
     kubectl create deployment nginx --image nginx
 
-Delete a deployment
+## Delete a deployment
 
     kubectl delete deployment nginx
 
-List namespaces
+## List namespaces
 
     kubectl get namespace
 
-List All Objects within and without namespaces
+## List All Objects within and without namespaces
 
     # In a namespace
     kubectl api-resources --namespaced=true
     
     # Not in a namespace
     kubectl api-resources --namespaced=false
+
+## Forward local port into a specific container
+
+```bash
+kubectl port-forward --namespace cattle-monitoring-system  9090:9090
+```
+
+## List directory in a container
+
+```bash
+kubectl exec --stdin --tty sleep-74f674fb96-8pkk4 --namespace test123 -- /bin/ls -latrH /var/run/secrets/..data
+```
+
+## Follow logs for a container
+
+```bash
+kubectl logs --namespace csi-provider-kmi --timestamps=true -f -l app=secrets-store-csi-driver-provider-kmi
+```
